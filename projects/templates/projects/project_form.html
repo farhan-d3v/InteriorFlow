@@ -1,0 +1,72 @@
+
+
+{% extends "projects/base.html" %}
+
+{% block title %}{{ page_title }} | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <a href="{% url 'project_list' %}" class="text-indigo-600 hover:underline text-sm">
+        ← Back to projects
+    </a>
+
+    <div class="mt-5 mb-6">
+        <h1 class="text-3xl font-bold">{{ page_title }}</h1>
+        <p class="text-slate-500 mt-2">Enter the project details below.</p>
+    </div>
+
+    <form method="post" class="bg-white border rounded-xl p-6 sm:p-8 space-y-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 text-red-700 rounded-lg p-3">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block font-medium mb-2">
+                {{ field.label }}
+                {% if field.field.required %}<span class="text-red-600">*</span>{% endif %}
+            </label>
+
+            {{ field }}
+
+            {% if field.help_text %}
+            <p class="text-sm text-slate-500 mt-1">{{ field.help_text }}</p>
+            {% endif %}
+
+            {% for error in field.errors %}
+            <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="flex flex-wrap gap-3 pt-3">
+            <button type="submit" class="bg-indigo-600 text-white rounded-lg px-6 py-3 hover:bg-indigo-700">
+                Save Project
+            </button>
+            <a href="{% url 'project_list' %}" class="border rounded-lg px-6 py-3 hover:bg-slate-50">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+    input, select, textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.5rem;
+        padding: 0.7rem 0.8rem;
+    }
+    input:focus, select:focus, textarea:focus {
+        outline: 2px solid #a5b4fc;
+        border-color: #6366f1;
+    }
+    input[type="checkbox"], input[type="radio"] {
+        width: auto;
+    }
+</style>
+{% endblock %}

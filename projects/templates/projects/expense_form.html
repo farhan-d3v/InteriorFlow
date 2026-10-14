@@ -1,0 +1,58 @@
+
+{% extends "projects/base.html" %}
+
+{% block title %}Record Expense | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <a href="{% url 'project_detail' project.pk %}"
+       class="text-indigo-600 hover:underline text-sm">
+        ← Back to project
+    </a>
+
+    <h1 class="text-3xl font-bold mt-5 mb-2">Record Expense</h1>
+    <p class="text-slate-500 mb-6">Project: {{ project.name }}</p>
+
+    <form method="post" class="bg-white border rounded-xl p-6 space-y-5">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 text-red-700 rounded-lg p-3">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block font-medium mb-2">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% for error in field.errors %}
+            <p class="text-sm text-red-600 mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="flex flex-wrap gap-3">
+            <button type="submit"
+                    class="bg-indigo-600 text-white rounded-lg px-5 py-3 hover:bg-indigo-700">
+                Save Expense
+            </button>
+            <a href="{% url 'project_detail' project.pk %}"
+               class="border rounded-lg px-5 py-3">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<style>
+input, select, textarea {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.8rem;
+}
+</style>
+{% endblock %}

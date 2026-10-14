@@ -1,0 +1,64 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}InteriorFlow{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+    <nav class="bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-5 py-4 flex flex-wrap items-center justify-between gap-4">
+            <a href="{% url 'dashboard' %}" class="text-2xl font-bold text-indigo-700">
+                InteriorFlow
+            </a>
+<div class="flex flex-wrap items-center gap-5 text-sm font-medium">
+    <a href="{% url 'dashboard' %}" class="hover:text-indigo-600">
+        Dashboard
+    </a>
+
+    <a href="{% url 'project_list' %}" class="hover:text-indigo-600">
+        Projects
+    </a>
+
+    <a href="{% url 'worker_list' %}" class="hover:text-indigo-600">
+        Team
+    </a>
+
+    <a href="{% url 'project_create' %}"
+       class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+        + New Project
+    </a>
+</div>
+
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-5 py-8">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 rounded-lg border border-green-200 bg-green-50 text-green-800 px-4 py-3">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="text-center text-sm text-slate-500 py-6">
+        InteriorFlow · Interior Project Management
+    </footer>
+    <script>
+    document.querySelectorAll("[data-progress]").forEach(function (bar) {
+        const value = Number(bar.dataset.progress) || 0;
+        const progress = Math.max(0, Math.min(100, value));
+        bar.style.width = progress + "%";
+    });
+</script>
+</body>
+</html>
+
+</body>
+</html>

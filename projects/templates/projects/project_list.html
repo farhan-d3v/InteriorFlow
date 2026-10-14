@@ -1,0 +1,106 @@
+
+{% extends "projects/base.html" %}
+
+{% block title %}Projects | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-7">
+    <div>
+        <h1 class="text-3xl font-bold">Projects</h1>
+        <p class="text-slate-500 mt-1">Manage all your interior design projects.</p>
+    </div>
+    <a href="{% url 'project_create' %}"
+       class="bg-indigo-600 text-white rounded-lg px-5 py-3 text-center hover:bg-indigo-700">
+        + New Project
+    </a>
+</div>
+
+<form method="get" class="bg-white border rounded-xl p-4 mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <input type="search" name="q" value="{{ query }}"
+           placeholder="Search name, client, location"
+           aria-label="Search projects"
+           class="border rounded-lg px-3 py-2 w-full">
+
+    <select name="status" aria-label="Filter by status" class="border rounded-lg px-3 py-2">
+        <option value="">All statuses</option>
+        {% for value, label in status_choices %}
+        <option value="{{ value }}" {% if selected_status == value %}selected{% endif %}>
+            {{ label }}
+        </option>
+        {% endfor %}
+    </select>
+
+    <select name="sort" aria-label="Sort projects" class="border rounded-lg px-3 py-2">
+        <option value="recent" {% if selected_sort == "recent" %}selected{% endif %}>Recently updated</option>
+        <option value="deadline" {% if selected_sort == "deadline" %}selected{% endif %}>Nearest deadline</option>
+    </select>
+
+    <button class="bg-slate-800 text-white rounded-lg px-4 py-2 hover:bg-slate-700">
+        Apply Filters
+    </button>
+</form>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+    {% if projects %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-100 text-slate-600">
+                <tr>
+                    <th class="p-4">Project</th>
+                    <th class="p-4">Client / Location</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Progress</th>
+                    <th class="p-4">Budget</th>
+                    <th class="p-4">Target Date</th>
+                    <th class="p-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for project in projects %}
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 font-semibold">{{ project.name }}</td>
+                    <td class="p-4">
+                        <div>{{ project.client }}</div>
+                        <div class="text-slate-500 mt-1">{{ project.location }}</div>
+                    </td>
+                    <td class="p-4">{{ project.status }}</td>
+                    <td class="p-4 min-w-36">
+                        <div class="flex justify-between mb-1">
+                            <span>{{ project.progress }}%</span>
+                        </div>
+                    <div class="bg-slate-200 rounded-full h-2">
+                        <div class="bg-indigo-600 rounded-full h-2"
+                            data-progress="{{ project.progress }}"
+                            role="progressbar"
+                            aria-label="Project progress"
+                            aria-valuenow="{{ project.progress }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+
+                        </div>
+                    </td>
+                    <td class="p-4 whitespace-nowrap">₹{{ project.estimated_budget|floatformat:2 }}</td>
+                    <td class="p-4 whitespace-nowrap">{{ project.target_end_date|date:"d M Y" }}</td>
+                    <td class="p-4 whitespace-nowrap">
+                        <a href="{% url 'project_detail' project.pk %}" class="text-indigo-600 hover:underline">View</a>
+                        <span class="text-slate-300 mx-1">|</span>
+                        <a href="{% url 'project_edit' project.pk %}" class="text-indigo-600 hover:underline">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-10 text-center">
+        <h2 class="font-semibold text-lg">No matching projects</h2>
+        <p class="text-slate-500 mt-2">Try changing your search or filters.</p>
+        <a href="{% url 'project_list' %}" class="inline-block mt-4 text-indigo-600 hover:underline">
+            Clear filters
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

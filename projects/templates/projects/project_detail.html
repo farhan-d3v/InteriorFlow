@@ -1,0 +1,255 @@
+
+{% extends "projects/base.html" %}
+
+{% block title %}{{ project.name }} | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <a href="{% url 'project_list' %}" class="text-indigo-600 hover:underline text-sm">
+        ← Back to projects
+    </a>
+</div>
+
+<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+    <div>
+        <p class="text-sm text-indigo-600 font-medium">{{ project.status }}</p>
+        <h1 class="text-3xl font-bold mt-1">{{ project.name }}</h1>
+        <p class="text-slate-500 mt-2">{{ project.client }} · {{ project.location }}</p>
+    </div>
+    <a href="{% url 'project_edit' project.pk %}"
+       class="bg-indigo-600 text-white rounded-lg px-5 py-3 text-center hover:bg-indigo-700">
+        Edit Project
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+    <div class="bg-white border rounded-xl p-5">
+        <p class="text-slate-500 text-sm">Estimated Budget</p>
+        <p class="text-2xl font-bold mt-2">₹{{ project.estimated_budget|floatformat:2 }}</p>
+    </div>
+    <div class="bg-white border rounded-xl p-5">
+        <p class="text-slate-500 text-sm">Project Progress</p>
+        <p class="text-2xl font-bold mt-2">{{ project.progress }}%</p>
+        <div class="bg-slate-200 rounded-full h-2 mt-3">
+<div class="bg-slate-200 rounded-full h-2 mt-3">
+    <div class="bg-indigo-600 rounded-full h-2"
+         data-progress="{{ project.progress }}"
+         role="progressbar"
+         aria-label="Project progress"
+         aria-valuenow="{{ project.progress }}"
+         aria-valuemin="0"
+         aria-valuemax="100">
+    </div>
+</div>
+/
+    </div>
+    <div class="bg-white border rounded-xl p-5">
+        <p class="text-slate-500 text-sm">Target Completion</p>
+        <p class="text-2xl font-bold mt-2">{{ project.target_end_date|date:"d M Y" }}</p>
+        <p class="text-sm text-slate-500 mt-2">Started {{ project.start_date|date:"d M Y" }}</p>
+    </div>
+</div>
+
+<div class="bg-white border rounded-xl p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-3">Project Overview</h2>
+    <p class="text-slate-600 whitespace-pre-line">{{ project.description|default:"No project description has been added." }}</p>
+</div>
+
+
+<div class="bg-white border rounded-xl p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+        <div>
+            <h2 class="text-xl font-semibold">Site Updates</h2>
+            <p class="text-slate-500 text-sm mt-1">
+                Construction progress and site activity history.
+            </p>
+        </div>
+
+        <a href="{% url 'site_update_create' project.pk %}"
+           class="bg-indigo-600 text-white rounded-lg px-4 py-2 text-center hover:bg-indigo-700">
+            + Add Update
+        </a>
+    </div>
+
+    {% for update in project.site_updates.all %}
+        <div class="border-l-4 border-indigo-500 pl-4 py-3 mb-5">
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-2">
+                <h3 class="font-semibold">{{ update.title }}</h3>
+                <span class="text-sm text-slate-500">
+                    {{ update.update_date|date:"d M Y" }}
+                </span>
+            </div>
+
+            <p class="text-slate-600 mt-2 whitespace-pre-line">
+                {{ update.notes }}
+            </p>
+
+            <div class="mt-3">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Project progress</span>
+                    <span>{{ update.progress }}%</span>
+                </div>
+
+                <div class="bg-slate-200 rounded-full h-2">
+                    <div class="bg-indigo-600 rounded-full h-2 site-progress"
+                         data-progress="{{ update.progress }}">
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-xs text-slate-500 mt-2">
+                Posted by {{ update.posted_by }}
+            </p>
+        </div>
+    {% empty %}
+        <div class="bg-slate-50 rounded-lg p-6 text-center">
+            <p class="font-medium">No site updates yet</p>
+            <p class="text-slate-500 text-sm mt-1">
+                Add your first update to record progress.
+            </p>
+        </div>
+    {% endfor %}
+</div>
+
+<script>
+    document.querySelectorAll(".site-progress").forEach(function (bar) {
+        const value = Number(bar.dataset.progress) || 0;
+        bar.style.width = Math.max(0, Math.min(100, value)) + "%";
+    });
+</script>
+
+
+<!-- Team Members -->
+<div class="bg-white border rounded-xl p-6 mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+        <div>
+            <h2 class="text-xl font-semibold">Assigned Team</h2>
+            <p class="text-sm text-slate-500 mt-1">
+                Workers assigned to this project.
+            </p>
+        </div>
+        <a href="{% url 'worker_list' %}"
+           class="text-indigo-600 hover:underline text-sm">
+            Manage team members
+        </a>
+    </div>
+
+    {% if assign_form.fields.worker.queryset.exists %}
+    <form method="post" action="{% url 'assign_worker' project.pk %}"
+          class="flex flex-col sm:flex-row gap-3 mb-5">
+        {% csrf_token %}
+        <div class="flex-1">
+            <label for="{{ assign_form.worker.id_for_label }}"
+                   class="block text-sm font-medium mb-2">
+                Assign a team member
+            </label>
+            {{ assign_form.worker }}
+        </div>
+        <button type="submit"
+                class="self-end bg-indigo-600 text-white px-4 py-3 rounded-lg hover:bg-indigo-700">
+            Assign
+        </button>
+    </form>
+    {% else %}
+    <p class="text-slate-500 text-sm mb-4">
+        No team members have been registered yet.
+        <a href="{% url 'worker_create' %}" class="text-indigo-600 underline">
+            Add a team member
+        </a>
+    </p>
+    {% endif %}
+
+    <div class="divide-y">
+        {% for assignment in project.assignments.all %}
+        <div class="py-4 flex flex-wrap justify-between items-center gap-3">
+            <div>
+                <p class="font-medium">{{ assignment.worker.name }}</p>
+                <p class="text-sm text-slate-500">{{ assignment.worker.role }}</p>
+                {% if assignment.worker.contact %}
+                <p class="text-sm text-slate-500">{{ assignment.worker.contact }}</p>
+                {% endif %}
+            </div>
+
+            <form method="post"
+                  action="{% url 'remove_assignment' project.pk assignment.pk %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="text-red-600 hover:underline text-sm">
+                    Remove
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        <p class="text-slate-500 py-3">No workers assigned to this project yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Expenses -->
+<div class="bg-white border rounded-xl p-6 mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+        <div>
+            <h2 class="text-xl font-semibold">Expenses</h2>
+            <p class="text-sm text-slate-500 mt-1">
+                Track actual project spending.
+            </p>
+        </div>
+        <a href="{% url 'expense_create' project.pk %}"
+           class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
+            + Record Expense
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-slate-50 rounded-lg p-4">
+            <p class="text-sm text-slate-500">Estimated Budget</p>
+            <p class="text-xl font-bold mt-1">
+                ₹{{ project.estimated_budget|floatformat:2 }}
+            </p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-4">
+            <p class="text-sm text-slate-500">Actual Spending</p>
+            <p class="text-xl font-bold mt-1">
+                ₹{{ actual_spending|floatformat:2 }}
+            </p>
+        </div>
+        <div class="bg-slate-50 rounded-lg p-4">
+            <p class="text-sm text-slate-500">Budget Remaining</p>
+            <p class="text-xl font-bold mt-1">
+                ₹{{ remaining_budget|floatformat:2 }}
+            </p>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-3">Description</th>
+                    <th class="p-3">Date</th>
+                    <th class="p-3">Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for expense in project.expenses.all %}
+                <tr>
+                    <td class="p-3">{{ expense.description }}</td>
+                    <td class="p-3">{{ expense.expense_date|date:"d M Y" }}</td>
+                    <td class="p-3 whitespace-nowrap">
+                        ₹{{ expense.amount|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="p-4 text-center text-slate-500">
+                        No expenses recorded yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -1,0 +1,47 @@
+
+{% extends "projects/base.html" %}
+
+{% block title %}Team Members | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+    <div>
+        <h1 class="text-3xl font-bold">Team Members</h1>
+        <p class="text-slate-500 mt-1">Manage your project workforce.</p>
+    </div>
+    <a href="{% url 'worker_create' %}"
+       class="bg-indigo-600 text-white px-5 py-3 rounded-lg hover:bg-indigo-700">
+        + Add Team Member
+    </a>
+</div>
+
+<div class="bg-white border rounded-xl overflow-hidden">
+    {% if workers %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-100">
+                <tr>
+                    <th class="p-4">Name</th>
+                    <th class="p-4">Role / Trade</th>
+                    <th class="p-4">Contact</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for worker in workers %}
+                <tr>
+                    <td class="p-4 font-medium">{{ worker.name }}</td>
+                    <td class="p-4">{{ worker.role }}</td>
+                    <td class="p-4">{{ worker.contact|default:"Not provided" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-10 text-center">
+        <h2 class="font-semibold">No team members yet</h2>
+        <p class="text-slate-500 mt-2">Add your first team member to get started.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

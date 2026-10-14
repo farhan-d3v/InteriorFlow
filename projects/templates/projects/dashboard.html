@@ -1,0 +1,89 @@
+
+{% extends "projects/base.html" %}
+
+{% block title %}Dashboard | InteriorFlow{% endblock %}
+
+{% block content %}
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+    <div>
+        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <p class="text-slate-500 mt-1">Your interior projects at a glance.</p>
+    </div>
+    <a href="{% url 'project_create' %}"
+       class="bg-indigo-600 text-white px-5 py-3 rounded-lg text-center hover:bg-indigo-700">
+        + Create Project
+    </a>
+</div>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+    <div class="bg-white rounded-xl border p-6">
+        <p class="text-slate-500 text-sm">Total Projects</p>
+        <p class="text-3xl font-bold mt-2">{{ total_projects }}</p>
+    </div>
+    <div class="bg-white rounded-xl border p-6">
+        <p class="text-slate-500 text-sm">Ongoing</p>
+        <p class="text-3xl font-bold text-blue-600 mt-2">{{ ongoing_projects }}</p>
+    </div>
+    <div class="bg-white rounded-xl border p-6">
+        <p class="text-slate-500 text-sm">Completed</p>
+        <p class="text-3xl font-bold text-green-600 mt-2">{{ completed_projects }}</p>
+    </div>
+    <div class="bg-white rounded-xl border p-6">
+        <p class="text-slate-500 text-sm">Overdue / Attention</p>
+        <p class="text-3xl font-bold text-red-600 mt-2">{{ overdue_projects }}</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl border p-6 mb-8">
+    <p class="text-slate-500 text-sm">Combined Estimated Budget</p>
+    <p class="text-3xl font-bold mt-2">₹{{ total_budget|floatformat:2 }}</p>
+    <p class="text-xs text-slate-500 mt-2">This is the sum of project budgets, not actual spending.</p>
+</div>
+
+<div class="bg-white rounded-xl border overflow-hidden">
+    <div class="p-6 flex items-center justify-between gap-3">
+        <h2 class="text-xl font-semibold">Recently Updated Projects</h2>
+        <a href="{% url 'project_list' %}" class="text-indigo-600 hover:underline text-sm">View all</a>
+    </div>
+
+    {% if recent_projects %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-500">
+                <tr>
+                    <th class="p-4">Project</th>
+                    <th class="p-4">Client</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4">Progress</th>
+                    <th class="p-4">Target Date</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                {% for project in recent_projects %}
+                <tr class="hover:bg-slate-50">
+                    <td class="p-4 font-medium">
+                        <a class="text-indigo-600 hover:underline"
+                           href="{% url 'project_detail' project.pk %}">
+                            {{ project.name }}
+                        </a>
+                    </td>
+                    <td class="p-4">{{ project.client }}</td>
+                    <td class="p-4">{{ project.status }}</td>
+                    <td class="p-4">{{ project.progress }}%</td>
+                    <td class="p-4">{{ project.target_end_date|date:"d M Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="p-10 text-center">
+        <p class="font-semibold">No projects yet</p>
+        <p class="text-slate-500 mt-2">Create your first project to get started.</p>
+        <a href="{% url 'project_create' %}" class="inline-block mt-4 text-indigo-600 hover:underline">
+            Create your first project
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
