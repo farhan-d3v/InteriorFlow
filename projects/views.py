@@ -10,8 +10,9 @@ from .forms import (
     WorkerForm,
     AssignWorkerForm,
     ExpenseForm,
+    TaskForm
 )
-from .models import Project, SiteUpdate, Worker, ProjectWorker, Expense
+from .models import Project, SiteUpdate, Worker, ProjectWorker, Expense,Task
 from .models import Project, SiteUpdate
 
 
@@ -63,21 +64,53 @@ def project_list(request):
         "status_choices": Project.STATUS_CHOICES,
     })
 
-
 def project_create(request):
     form = ProjectForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Project created successfully.")
-        return redirect("project_list")
+        if form.cleaned_data["status"] == "Completed":
+            form.add_error(
+                "status",
+                "A project can only be completed when its tasks reach 100% progress."
+            )
+        else:
+            project = form.save()
+            project.update_progress()
+
+            messages.success(request, "Project created successfully.")
+            return redirect("project_list")
 
     return render(request, "projects/project_form.html", {
         "form": form,
         "page_title": "Create Project",
     })
 
+def project_edit(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    form = ProjectForm(request.POST or None, instance=project)
 
+    if request.method == "POST" and form.is_valid():
+        calculated_progress = project.calculate_progress()
+
+        if (
+            form.cleaned_data["status"] == "Completed"
+            and calculated_progress < 100
+        ):
+            form.add_error(
+                "status",
+                "A project can only be completed when its tasks reach 100% progress."
+            )
+        else:
+            project = form.save()
+            project.update_progress()
+
+            messages.success(request, "Project updated successfully.")
+            return redirect("project_detail", pk=project.pk)
+
+    return render(request, "projects/project_form.html", {
+        "form": form,
+        "page_title": "Edit Project",
+    })
 
 def project_detail(request, pk):
     project = get_object_or_404(Project, pk=pk)
@@ -95,21 +128,6 @@ def project_detail(request, pk):
 
 
 
-def project_edit(request, pk):
-    project = get_object_or_404(Project, pk=pk)
-    form = ProjectForm(request.POST or None, instance=project)
-
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Project updated successfully.")
-        return redirect("project_detail", pk=project.pk)
-
-    return render(request, "projects/project_form.html", {
-        "form": form,
-        "page_title": "Edit Project",
-    })
-
-
 def site_update_create(request, pk):
     project = get_object_or_404(Project, pk=pk)
     form = SiteUpdateForm(request.POST or None)
@@ -117,10 +135,10 @@ def site_update_create(request, pk):
     if request.method == "POST" and form.is_valid():
         site_update = form.save(commit=False)
         site_update.project = project
-        site_update.save()
 
-        project.progress = site_update.progress
-        project.save(update_fields=["progress", "updated_at"])
+        # Save the overall progress as a historical snapshot.
+        site_update.progress = project.progress
+        site_update.save()
 
         messages.success(request, "Site update added successfully.")
         return redirect("project_detail", pk=project.pk)
@@ -129,6 +147,7 @@ def site_update_create(request, pk):
         "form": form,
         "project": project,
     })
+
 
 
 def worker_list(request):
@@ -208,4 +227,49 @@ def expense_create(request, pk):
     return render(request, "projects/expense_form.html", {
         "form": form,
         "project": project,
+    })
+
+def task_create(request, pk):
+    project = get_object_or_404(Project, pk=pk)
+    form = TaskForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        task = form.save(commit=False)
+        task.project = project
+        task.save()
+
+        project.update_progress()
+
+        messages.success(request, "Task created successfully.")
+        return redirect("project_detail", pk=project.pk)
+
+    return render(request, "projects/task_form.html", {
+        "form": form,
+        "project": project,
+        "page_title": "Add Task",
+    })
+
+
+def task_edit(request, pk, task_pk):
+    project = get_object_or_404(Project, pk=pk)
+    task = get_object_or_404(
+        Task,
+        pk=task_pk,
+        project=project,
+    )
+
+    form = TaskForm(request.POST or None, instance=task)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+
+        project.update_progress()
+
+        messages.success(request, "Task updated successfully.")
+        return redirect("project_detail", pk=project.pk)
+
+    return render(request, "projects/task_form.html", {
+        "form": form,
+        "project": project,
+        "page_title": "Edit Task",
     })

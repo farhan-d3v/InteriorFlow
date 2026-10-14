@@ -27,22 +27,21 @@
         <p class="text-slate-500 text-sm">Estimated Budget</p>
         <p class="text-2xl font-bold mt-2">₹{{ project.estimated_budget|floatformat:2 }}</p>
     </div>
-    <div class="bg-white border rounded-xl p-5">
-        <p class="text-slate-500 text-sm">Project Progress</p>
-        <p class="text-2xl font-bold mt-2">{{ project.progress }}%</p>
-        <div class="bg-slate-200 rounded-full h-2 mt-3">
-<div class="bg-slate-200 rounded-full h-2 mt-3">
-    <div class="bg-indigo-600 rounded-full h-2"
-         data-progress="{{ project.progress }}"
-         role="progressbar"
-         aria-label="Project progress"
-         aria-valuenow="{{ project.progress }}"
-         aria-valuemin="0"
-         aria-valuemax="100">
+<div class="bg-white border rounded-xl p-5">
+    <p class="text-slate-500 text-sm">Project Progress</p>
+    <p class="text-2xl font-bold mt-2">{{ project.progress }}%</p>
+
+    <div class="bg-slate-200 rounded-full h-2 mt-3">
+        <div class="bg-indigo-600 rounded-full h-2 project-progress"
+             data-progress="{{ project.progress }}"
+             role="progressbar"
+             aria-label="Project progress"
+             aria-valuenow="{{ project.progress }}"
+             aria-valuemin="0"
+             aria-valuemax="100">
+        </div>
     </div>
 </div>
-/
-    </div>
     <div class="bg-white border rounded-xl p-5">
         <p class="text-slate-500 text-sm">Target Completion</p>
         <p class="text-2xl font-bold mt-2">{{ project.target_end_date|date:"d M Y" }}</p>
@@ -55,6 +54,77 @@
     <p class="text-slate-600 whitespace-pre-line">{{ project.description|default:"No project description has been added." }}</p>
 </div>
 
+<!-- Project Tasks -->
+<div class="bg-white border rounded-xl p-6 mb-6">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-5">
+        <div>
+            <h2 class="text-xl font-semibold">Project Tasks</h2>
+            <p class="text-slate-500 text-sm mt-1">
+                Track individual tasks and their contribution to project progress.
+            </p>
+        </div>
+
+        <a href="{% url 'task_create' project.pk %}"
+           class="bg-indigo-600 text-white rounded-lg px-4 py-2 text-center hover:bg-indigo-700">
+            + Add Task
+        </a>
+    </div>
+
+    <div class="space-y-4">
+        {% for task in project.tasks.all %}
+        <div class="border rounded-lg p-4">
+            <div class="flex flex-col sm:flex-row sm:justify-between gap-3">
+                <div>
+                    <h3 class="font-semibold">{{ task.name }}</h3>
+
+                    {% if task.description %}
+                    <p class="text-slate-600 text-sm mt-1">
+                        {{ task.description }}
+                    </p>
+                    {% endif %}
+
+                    <p class="text-slate-500 text-sm mt-2">
+                        Weight: {{ task.weight }}%
+                        {% if task.due_date %}
+                        · Due {{ task.due_date|date:"d M Y" }}
+                        {% endif %}
+                    </p>
+                </div>
+
+                <a href="{% url 'task_edit' project.pk task.pk %}"
+                   class="text-indigo-600 hover:underline text-sm">
+                    Edit Task
+                </a>
+            </div>
+
+            <div class="mt-4">
+                <div class="flex justify-between text-sm mb-1">
+                    <span>Task completion</span>
+                    <span>{{ task.progress }}%</span>
+                </div>
+
+                <div class="bg-slate-200 rounded-full h-2">
+                    <div class="bg-indigo-600 rounded-full h-2 task-progress"
+                         data-progress="{{ task.progress }}"
+                         role="progressbar"
+                         aria-label="{{ task.name }} completion"
+                         aria-valuenow="{{ task.progress }}"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="bg-slate-50 rounded-lg p-6 text-center">
+            <p class="font-medium">No tasks added yet</p>
+            <p class="text-slate-500 text-sm mt-1">
+                Add your first task to start tracking project progress.
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 <div class="bg-white border rounded-xl p-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
@@ -111,12 +181,16 @@
     {% endfor %}
 </div>
 
+
 <script>
-    document.querySelectorAll(".site-progress").forEach(function (bar) {
+    document.querySelectorAll(
+        ".site-progress, .project-progress, .task-progress"
+    ).forEach(function (bar) {
         const value = Number(bar.dataset.progress) || 0;
         bar.style.width = Math.max(0, Math.min(100, value)) + "%";
     });
 </script>
+
 
 
 <!-- Team Members -->

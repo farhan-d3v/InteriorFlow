@@ -40,8 +40,58 @@ class Project(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name
+         return self.name
 
+
+    def calculate_progress(self):
+        tasks = self.tasks.all()
+        total_weight = sum(task.weight for task in tasks)
+
+        if total_weight == 0:
+            return 0
+
+        weighted_progress = sum(
+            task.weight * task.progress
+            for task in tasks
+        )
+
+        return round(weighted_progress / total_weight)
+
+    def update_progress(self):
+        self.progress = self.calculate_progress()
+        self.save(update_fields=["progress", "updated_at"])
+
+
+
+class Task(models.Model):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="tasks"
+    )
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    weight = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(100)
+        ]
+    )
+    progress = models.PositiveIntegerField(
+        default=0,
+        validators=[
+            MaxValueValidator(100)
+        ]
+    )
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["due_date", "name"]
+
+    def __str__(self):
+        return self.name
 
 class SiteUpdate(models.Model):
     project = models.ForeignKey(

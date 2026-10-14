@@ -1,6 +1,7 @@
 
 from django.urls import path
 from . import views
+from .views import task_create, task_edit
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -29,6 +30,16 @@ path(
     "projects/<int:pk>/expenses/new/",
     views.expense_create,
     name="expense_create",
+),
+path(
+    "projects/<int:pk>/tasks/add/",
+    task_create,
+    name="task_create",
+),
+path(
+    "projects/<int:pk>/tasks/<int:task_pk>/edit/",
+    task_edit,
+    name="task_edit",
 ),
 
 ]
